@@ -3,7 +3,7 @@ Find methylation patterns of enhancer-promoter pairs coexisting on the same DNA 
 
 ### Preprocess:
 Data: Optical methylation maps. https://genome.cshlp.org/content/29/4/646
-#####Bionano outputs to single molecule methylation labels list:
+##### Bionano outputs to single molecule methylation labels list:
 Bionano .molecules file (.BNX) ->\
 -> alignment (Bionano Access + Solve) to alignment files: .xmap, r.cmap, q.cmap.->\
 -> alignment files to filtered single molecule methylation labels lists (.tsv): https://github.com/ebensteinLab/Irys-data-analysis \
@@ -11,7 +11,7 @@ Bionano .molecules file (.BNX) ->\
 molID, mol chr, mol start, mol end, a comma-separated list of labels locations in the query channel. 
 
 
-###Single_molecule_methylation_in_EP:
+### Single_molecule_methylation_in_EP:
 The script 'Single_molecule_methylation_in_EP' looks for single DNA molecules that contain a full enhancer-promoter pair,
  and records the methylation states of the enhancer and promoter on the molecule 
  (elements that contain at least one label are marked "unmethylated", elements with not labels are marked "methylated").\
