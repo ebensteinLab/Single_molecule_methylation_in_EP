@@ -1,5 +1,6 @@
 # Single_molecule_methylation_in_EP:
-Find methylation patterns of enhancer-promoter pairs coexisting on the same DNA molecule, from Bionano Genomics data.
+Find methylation patterns of enhancer-promoter pairs coexisting on the same DNA molecule, from Bionano Genomics data.\
+https://www.biorxiv.org/content/10.1101/2021.01.28.428654v1  
 
 ### Preprocess:
 Data: Optical methylation maps. https://genome.cshlp.org/content/29/4/646
