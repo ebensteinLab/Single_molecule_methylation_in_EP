@@ -1,5 +1,6 @@
 # Single_molecule_methylation_in_EP:
 Find methylation patterns of enhancer-promoter pairs coexisting on the same DNA molecule, from Bionano Genomics data.\
+If you use this code please cite: Margalit S. et al., Long Reads Capture Simultaneous Enhancer- Promoter Methylation Status for Cell-type Deconvolution. BioRxiv. 2021
 https://www.biorxiv.org/content/10.1101/2021.01.28.428654v1  
 
 ### Preprocess:
