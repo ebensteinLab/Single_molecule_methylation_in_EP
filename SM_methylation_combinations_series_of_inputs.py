@@ -58,9 +58,9 @@ class Labels:
         self.end = end
 
 
-def promoters_file_to_dict(prom_file_path):
+def promoters_file_to_dict(prom_file_path, num_of_desired_chroms):
     print("promoters_file_to_dict", flush=True)
-    chromosomes = canonical_chromosomes_list(24)
+    chromosomes = canonical_chromosomes_list(num_of_desired_chroms)
     prom_dict = {chromosome: {} for chromosome in chromosomes}
     with open(prom_file_path, 'r') as prom_file:
         for prom_line in prom_file:
@@ -72,9 +72,9 @@ def promoters_file_to_dict(prom_file_path):
         return prom_dict
 
 
-def enhancers_file_to_dict(enhancers_file_path):
+def enhancers_file_to_dict(enhancers_file_path, num_of_desired_chroms):
     print("enhancers_file_to_dict", flush=True)
-    chromosomes = canonical_chromosomes_list(23)
+    chromosomes = canonical_chromosomes_list(num_of_desired_chroms)
     enh_dict = {chromosome: {} for chromosome in chromosomes}
     # pairs_dict = {chromosome: [] for chromosome in chromosomes}
     pairs_dict = defaultdict(set)
@@ -100,9 +100,9 @@ def canonical_chromosomes_list(actual_num_chroms):
     return chroms[0:actual_num_chroms]
 
 
-def molecules_file_to_dict(molcs_file_path):
+def molecules_file_to_dict(molcs_file_path, num_of_desired_chroms):
     print("molecules_file_to_dict", flush=True)
-    chromosomes = canonical_chromosomes_list(24)
+    chromosomes = canonical_chromosomes_list(num_of_desired_chroms)
     molcs_dict = {chromosome: {} for chromosome in chromosomes}
     with open(molcs_file_path) as molcs_file:
         for molc_line in molcs_file:
@@ -135,7 +135,7 @@ def find_overlaps(query_molcs_dict_chrom, subject_dict_chrom, molcs_elements_ove
             if query_molcs_dict_chrom[q].start <= subject_dict_chrom[s].start and query_molcs_dict_chrom[q].end >= \
                     subject_dict_chrom[s].end:
                 overlaps_list_of_tuples.append((q, s))
-    overlaps_pd_df = pd.DataFrame(overlaps_list_of_tuples, columns=["mol", "subject"])
+    overlaps_pd_df = pd.DataFrame(overlaps_list_of_tuples, columns=['mol', 'subject'])
     molcs_elements_overlaps_dict[chrom] = overlaps_pd_df
     print(perf_counter() - start_time, flush=True)
     return molcs_elements_overlaps_dict
@@ -153,8 +153,8 @@ def match_EP_on_the_same_mol(molcs_promoters_overlaps_chr, molcs_enhancers_ovela
 def filter_pairs_on_molcs(same_molecule_EP, pairs_list, filtered_EP_on_same_mol_dict, chrom):
     print("filter_pairs_on_molcs", flush=True)
     start_time = perf_counter()
-    same_molecule_EP["pair_name"] = None
-    same_molecule_EP["pair_name"] = (same_molecule_EP["subject_y"] + "_" + same_molecule_EP["subject_x"])
+    same_molecule_EP['pair_name'] = None
+    same_molecule_EP['pair_name'] = (same_molecule_EP['subject_y'] + "_" + same_molecule_EP['subject_x'])
     same_molecule_EP.query('pair_name in @pairs_list', inplace=True)
     filtered_EP_on_same_mol_dict[chrom] = same_molecule_EP
     # print(same_molecule_EP.head(3))
@@ -211,15 +211,15 @@ def get_methylation(filtered_EP_on_same_mol, prom_dict, enh_dict, molcs_dict, ch
     filtered_EP_on_same_mol = filtered_EP_on_same_mol.rename(columns={"subject_x": "gene_sym", "subject_y": "enh_ID"})
     filtered_EP_on_same_mol = filtered_EP_on_same_mol.drop(columns=['mol', 'pair_name', 'prom_labels', 'enh_labels'])
     # print(filtered_EP_on_same_mol.head)
-    results_by_pair = filtered_EP_on_same_mol.groupby(by=["gene_sym", "enh_ID"], as_index=False).sum()
+    results_by_pair = filtered_EP_on_same_mol.groupby(by=['gene_sym', 'enh_ID'], as_index=False).sum()
 
-    results_by_pair["total_molcs"] = None
-    results_by_pair["total_molcs"] = (results_by_pair["enh_m_prom_m"] + results_by_pair["enh_um_prom_um"] +
-                                      results_by_pair["enh_um_prom_m"] + results_by_pair["enh_m_prom_um"])
-    results_by_pair["chrom"] = None
-    results_by_pair["chrom"] = chrom
+    results_by_pair['total_molcs'] = None
+    results_by_pair['total_molcs'] = (results_by_pair['enh_m_prom_m'] + results_by_pair['enh_um_prom_um'] +
+                                      results_by_pair['enh_um_prom_m'] + results_by_pair['enh_m_prom_um'])
+    results_by_pair['chrom'] = None
+    results_by_pair['chrom'] = chrom
     #print(results_by_pair.head)
-    results_by_pair["EP_distance"] = None
+    results_by_pair['EP_distance'] = None
     results_by_pair['EP_distance'] = [get_distance(gene_sym, enh_ID, prom_dict, enh_dict) for
                                       (gene_sym, enh_ID) in zip(results_by_pair['gene_sym'], results_by_pair['enh_ID'])]
     print(results_by_pair.head, flush=True)
@@ -240,35 +240,36 @@ def main():
 
     chromosomes = canonical_chromosomes_list(num_of_desired_chroms)
 
-    prom_dict = promoters_file_to_dict(prom_file_path)
-    enh_dict, enh_dict_pairs = enhancers_file_to_dict(enhancers_file_path)
+    prom_dict = promoters_file_to_dict(prom_file_path, num_of_desired_chroms)
+    enh_dict, enh_dict_pairs = enhancers_file_to_dict(enhancers_file_path, num_of_desired_chroms)
 
     input_dir_list = os.listdir(inputs_dir)
     for input_file in input_dir_list:
         input_file_path = os.path.join(inputs_dir, input_file)
-        molcs_dict = molecules_file_to_dict(input_file_path)
+        molcs_dict = molecules_file_to_dict(input_file_path, num_of_desired_chroms)
         molcs_promoters_overlaps_dict = {chromosome: {} for chromosome in chromosomes}
         molcs_enhancers_ovelaps_dict = {chromosome: {} for chromosome in chromosomes}
         EP_on_same_mol_dict = {chromosome: {} for chromosome in chromosomes}
         filtered_EP_on_same_mol_dict = {chromosome: {} for chromosome in chromosomes}
 
-        results_all_chroms = pd.DataFrame([], columns=["gene_sym", "enh_ID", "enh_m_prom_m", "enh_um_prom_um",
-                                                       "enh_um_prom_m", "enh_m_prom_um", "chrom", "total_molcs",
-                                                       "EP_distance"])
+        results_all_chroms = pd.DataFrame([], columns=['gene_sym', 'enh_ID', 'enh_m_prom_m', 'enh_um_prom_um',
+                                                       'enh_um_prom_m', 'enh_m_prom_um', 'chrom', 'total_molcs',
+                                                       'EP_distance'])
 
         for chrom in chromosomes:
             print(chrom, flush=True)
-            molcs_promoters_overlaps_dict = find_overlaps(molcs_dict[chrom], prom_dict[chrom],
-                                                          molcs_promoters_overlaps_dict, chrom)
-            molcs_enhancers_ovelaps_dict = find_overlaps(molcs_dict[chrom], enh_dict[chrom],
-                                                         molcs_enhancers_ovelaps_dict, chrom)
-            EP_on_same_mol_dict = match_EP_on_the_same_mol(molcs_promoters_overlaps_dict[chrom],
-                                                           molcs_enhancers_ovelaps_dict[chrom], EP_on_same_mol_dict, chrom)
-            filtered_EP_on_same_mol_dict = filter_pairs_on_molcs(EP_on_same_mol_dict[chrom], enh_dict_pairs[chrom],
-                                                                 filtered_EP_on_same_mol_dict, chrom)
-            results_all_chroms = pd.concat([results_all_chroms, get_methylation(filtered_EP_on_same_mol_dict[chrom],
-                                                                                prom_dict[chrom], enh_dict[chrom],
-                                                                                molcs_dict[chrom], chrom)])
+            if molcs_dict[chrom] and prom_dict[chrom] and enh_dict[chrom]:
+                molcs_promoters_overlaps_dict = find_overlaps(molcs_dict[chrom], prom_dict[chrom],
+                                                              molcs_promoters_overlaps_dict, chrom)
+                molcs_enhancers_ovelaps_dict = find_overlaps(molcs_dict[chrom], enh_dict[chrom],
+                                                             molcs_enhancers_ovelaps_dict, chrom)
+                EP_on_same_mol_dict = match_EP_on_the_same_mol(molcs_promoters_overlaps_dict[chrom],
+                                                               molcs_enhancers_ovelaps_dict[chrom], EP_on_same_mol_dict, chrom)
+                filtered_EP_on_same_mol_dict = filter_pairs_on_molcs(EP_on_same_mol_dict[chrom], enh_dict_pairs[chrom],
+                                                                     filtered_EP_on_same_mol_dict, chrom)
+                results_all_chroms = pd.concat([results_all_chroms, get_methylation(filtered_EP_on_same_mol_dict[chrom],
+                                                                                    prom_dict[chrom], enh_dict[chrom],
+                                                                                    molcs_dict[chrom], chrom)])
         results_all_chroms.query('EP_distance > @min_EP_distance and total_molcs > @min_pair_coverage', inplace=True)
 
         in_name = os.path.splitext(input_file)[0]
